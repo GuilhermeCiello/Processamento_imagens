@@ -20,11 +20,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 pixels[y] = [];
                 for (let x = 0; x < canvas.width; x++) {
                     const index = (y * canvas.width + x) * 4;
-                    const gray = data[index];
-                    pixels[y][x] = gray;
+                    const r = 255 - data[index];
+                    const g = 255 - data[index + 1];
+                    const b = 255 - data[index + 2];
+                    pixels[y][x] = [r, g, b];
                 }
             }
             console.log(pixels);
+              // Exibir imagem original
+              const imagemOriginal = document.getElementById('imagemOriginal');
+              imagemOriginal.src = imageUrl;
         };
     });
 
@@ -35,23 +40,15 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const new_pixels = [];
-        for (let y = 0; y < pixels.length; y++) {
-            new_pixels[y] = [];
-            for (let x = 0; x < pixels[y].length; x++) {
-                new_pixels[y][x] = 255 - pixels[y][x];
-            }
-        }
-
         const new_canvas = document.createElement('canvas');
         const new_ctx = new_canvas.getContext('2d');
         new_canvas.width = pixels[0].length;
         new_canvas.height = pixels.length;
 
-        for (let y = 0; y < new_pixels.length; y++) {
-            for (let x = 0; x < new_pixels[y].length; x++) {
-                const value = new_pixels[y][x];
-                new_ctx.fillStyle = `rgb(${value},${value},${value})`;
+        for (let y = 0; y < pixels.length; y++) {
+            for (let x = 0; x < pixels[y].length; x++) {
+                const [r, g, b] = pixels[y][x];
+                new_ctx.fillStyle = `rgb(${r},${g},${b})`;
                 new_ctx.fillRect(x, y, 1, 1);
             }
         }
@@ -67,6 +64,42 @@ document.addEventListener('DOMContentLoaded', function () {
         // const link = document.createElement('a');
         // link.href = new_imageUrl;
         // link.download = 'imagem_negativa.png';
+        // link.click();
+    });
+
+    const binario = document.getElementById('binario');
+    binario.addEventListener('click', function () {
+        if (!pixels || pixels.length === 0) {
+            console.error('Pixels não foram inicializados.');
+            return;
+        }
+
+        const new_canvas = document.createElement('canvas');
+        const new_ctx = new_canvas.getContext('2d');
+        new_canvas.width = pixels[0].length;
+        new_canvas.height = pixels.length;
+
+        for (let y = 0; y < pixels.length; y++) {
+            for (let x = 0; x < pixels[y].length; x++) {
+                const [r, g, b] = pixels[y][x];
+                const gray = (r + g + b) / 3;
+                const binary = gray > 127 ? 255 : 0;
+                new_ctx.fillStyle = `rgb(${binary},${binary},${binary})`;
+                new_ctx.fillRect(x, y, 1, 1);
+            }
+        }
+
+        const new_imageUrl = new_canvas.toDataURL(); // URL da nova imagem
+        const new_img = new Image();
+        new_img.src = new_imageUrl;
+
+        // Exibe a nova imagem
+        document.body.appendChild(new_img);
+
+        // Ou faça o download da nova imagem
+        // const link = document.createElement('a');
+        // link.href = new_imageUrl;
+        // link.download = 'imagem_binaria.png';
         // link.click();
     });
 });
